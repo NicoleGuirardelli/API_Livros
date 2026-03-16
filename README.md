@@ -26,7 +26,6 @@ Uma API REST simples desenvolvida em Node.js e Express para gerenciamento e cons
     O servidor estará rodando em http://localhost:3000
 
 ## Funcionalidades e Endpoints
-## ⚙️ Endpoints da API
 
 Abaixo estão todos os endpoints disponíveis, seus métodos, regras de negócio e exemplos.
 
