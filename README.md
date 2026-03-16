@@ -11,41 +11,75 @@ Uma API REST simples desenvolvida em Node.js e Express para gerenciamento e cons
 
 1. **Clone o repositório:**
    ```bash
-   git clone [https://github.com/NicoleGuirardelli/API_Livros](https://github.com/NicoleGuirardelli/API_Livros)
+   git clone https://github.com/NicoleGuirardelli/API_Livros.git
    ```
 2. **Acesse a pasta do projeto.**
+```bash
+   cd API_Livros
+```
 3. **Instale as dependências:**  
-      * npm install express
+     ```bash
+       npm install express
+    ```
 4. **Inicie o servidor:**
     _aparece mensagem:_
     O servidor estará rodando em http://localhost:3000
 
 ## Funcionalidades e Endpoints
+## ⚙️ Endpoints da API
 
-1. Listar todos os livros (com paginação padrão)
-GET /api/livros
+Abaixo estão todos os endpoints disponíveis, seus métodos, regras de negócio e exemplos.
 
-Retorna a primeira página de livros, limite padrão de 5 itens.
+| Método | Rota | Descrição |
+|---|---|---|
+| **GET** | `/api/livros` | Lista os livros (com paginação, filtros e ordenação). |
+| **GET** | `/api/livros/:id` | Retorna um livro específico pelo ID. |
+| **POST** | `/api/livros` | Cria um novo livro no catálogo. |
 
-2. Filtrar livros por gênero
-GET /api/livros?genero=Literatura
+### GET `/api/livros`
+Lista os livros. Aceita os seguintes query params: `genero`, `ordem` (titulo ou nota), `direcao` (asc ou desc), `pagina`, e `limite`.
+* **Body da Requisição:** Nenhum.
+* **Resposta de Sucesso (200):**
+```json
+{
+  "dados": [ { "id": 1, "titulo": "Dom Casmurro", ... } ],
+  "paginacao": { "pagina_atual": 1, "itens_por_pagina": 5, "total": 10 }
+}
+```
+### GET `/api/livros/:id`
+Busca os detalhes de um livro específico.
 
-Retorna todos os livros que correspondem ao gênero.
+* **Resposta de Sucesso (200):** Objeto JSON do livro correspondente.
 
-3. Ordenar livros
-GET /api/livros?ordem=nota&direcao=desc
+* **Resposta de Erro (404):** {"erro": "Livro não encontrado"}
 
-Permite ordenar a lista por titulo ou nota. A direção pode ser asc (crescente) ou desc (decrescente).
+ ### POST `/api/livros`
+ Adiciona um novo livro ao sistema.
 
-4. Paginação customizada
-GET /api/livros?pagina=1&limite=3
+*Validações Implementadas:
 
-Controla a quantidade de itens por página e qual página visualizar.
+  Todos os campos são de preenchimento obrigatório.
 
-5. Buscar livro por ID
-GET /api/livros/:id
+  Tipo de dado: ano e nota devem ser obrigatoriamente numéricos.
 
-Retorna os detalhes de um livro específico com base no seu id.
+  Regra de negócio: A nota deve estar entre 0 e 5.
+
+  * **Body da Requisição (JSON):**
+  ```json
+  {
+  "titulo": "O Alquimista",
+  "autor": "Paulo Coelho",
+  "ano": 1988,
+  "genero": "Ficção",
+  "nota": 4.1
+  }
+  ```
+* **Resposta de Sucesso (201 Created):** Retorna o objeto criado, incluindo o novo ID gerado automaticamente.
+
+* **Resposta de Erro (400 Bad Request):** Detalha a falha de validação. Ex: {"erro": "A nota deve ser um valor entre 0 e 5."}
+
+
+
 
 ## Testando no Postman
 
@@ -55,6 +89,16 @@ No projeto encontrará o arquivo: Api Livros.postman_collection.json .
 
 2. Clique em Import no canto superior esquerdo.
 
-3. Selecione o arquivo .json deste repositório.
+3. Selecione o arquivo .json.
 
-4. Uma coleção chamada "Api Livros" aparecerá na sua barra lateral com todas as requisições prontas para uso!
+4. Uma coleção chamada "Api Livros" aparecerá na sua barra lateral com todas as requisições GET e POST prontas para uso.
+
+# Teste Postman
+* **Teste de criação POST**
+img
+
+* **Teste de validação**
+img
+* **Teste Filtro**
+
+img
