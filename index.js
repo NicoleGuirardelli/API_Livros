@@ -83,7 +83,53 @@ res.json(livro);
 
 });
 
+// Variável para controlar o ID dos novos livros
+let proximoId = 11; 
 
+// POST /api/livros - Criar novo livro
+app.post('/api/livros', (req, res) => {
+    const { titulo, autor, ano, genero, nota } = req.body;
+
+    
+    
+    // 1. Verifica se todos os campos foram enviados
+    if (!titulo || !autor || !ano || !genero || nota === undefined) {
+        return res.status(400).json({ 
+            erro: "Todos os campos (titulo, autor, ano, genero, nota) são obrigatórios." 
+        });
+    }
+
+    // 2. Verifica os tipos de dados
+    if (typeof ano !== 'number' || typeof nota !== 'number') {
+        return res.status(400).json({ 
+            erro: "Os campos 'ano' e 'nota' devem ser números." 
+        });
+    }
+
+    // 3. Verifica regras de negócio (nota entre 0 e 5)
+    if (nota < 0 || nota > 5) {
+        return res.status(400).json({ 
+            erro: "A nota deve ser um valor entre 0 e 5." 
+        });
+    }
+
+    // --- CRIAÇÃO DO RECURSO ---
+    
+    const novoLivro = {
+        id: proximoId++, // Atribui o ID atual e depois soma 1 para o próximo
+        titulo,
+        autor,
+        ano,
+        genero,
+        nota
+    };
+
+    // Adiciona no array em memória
+    livros.push(novoLivro);
+
+    // Retorna status 201 (Created) e o objeto recém-criado
+    res.status(201).json(novoLivro);
+});
 
 app.listen(3000, () => {
 console.log("API rodando na porta 3000");
