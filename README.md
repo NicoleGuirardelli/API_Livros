@@ -95,10 +95,12 @@ No projeto encontrará o arquivo: Api Livros.postman_collection.json .
 
 # Teste Postman
 * **Teste de criação POST**
-img
+![](Captura%20de%20tela%202026-03-15%20221103.png)
+
+![](Captura%20de%20tela%202026-03-15%20220650.png)
 
 * **Teste de validação**
-img
-* **Teste Filtro**
+![Erro 400:Após tentativa de inserir dados errados.](Captura%20de%20tela%202026-03-15%20221211.png)
 
-img
+* **Teste Filtro**
+![](Captura%20de%20tela%202026-03-16%20112719.png)
