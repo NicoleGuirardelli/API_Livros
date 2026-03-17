@@ -22,6 +22,9 @@ Uma API REST simples desenvolvida em Node.js e Express para gerenciamento e cons
        npm install express
     ```
 4. **Inicie o servidor:**
+    ```bash
+       node index.js
+     ```
     _aparece mensagem:_
     O servidor estará rodando em http://localhost:3000
 
