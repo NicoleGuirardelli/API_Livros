@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "0d955738-3f60-40ae-a911-9a2a83a0dc19",
+    "_postman_id": "31cab915-1d90-4703-aef2-a79a7c83ca9d",
     "name": "Api Livros",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "53219027",
-    "_collection_link": "https://go.postman.co/collection/53219027-0d955738-3f60-40ae-a911-9a2a83a0dc19?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/53219027-31cab915-1d90-4703-aef2-a79a7c83ca9d?source=collection_link"
   },
   "item": [
     {
@@ -185,6 +185,57 @@
           "path": [
             "api",
             "livros"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Atualizar livro",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"titulo\": \"Livro Atualizado\",\r\n  \"autor\": \"Autor X\",\r\n  \"ano\": 2020,\r\n  \"genero\": \"Drama\",\r\n  \"nota\": 4.5\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/livros/2",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "livros",
+            "2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "deletar livro",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/livros/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "livros",
+            "1"
           ]
         }
       },

@@ -19,7 +19,8 @@ Uma API REST simples desenvolvida em Node.js e Express para gerenciamento e cons
 ```
 3. **Instale as dependências:**  
      ```bash
-       npm install express
+       npm install
+       npm install sqlite3
     ```
 4. **Inicie o servidor:**
     ```bash
@@ -27,6 +28,14 @@ Uma API REST simples desenvolvida em Node.js e Express para gerenciamento e cons
      ```
     _aparece mensagem:_
     O servidor estará rodando em http://localhost:3000
+
+## Banco de Dados
+
+A API utiliza SQLite para persistência de dados. 
+O banco de dados é criado automaticamente ao iniciar o servidor, no arquivo:
+database.db
+
+Não é necessário instalar nenhum sistema de banco de dados externo.
 
 ## Funcionalidades e Endpoints
 
@@ -37,6 +46,8 @@ Abaixo estão todos os endpoints disponíveis, seus métodos, regras de negócio
 | **GET** | `/api/livros` | Lista os livros (com paginação, filtros e ordenação). |
 | **GET** | `/api/livros/:id` | Retorna um livro específico pelo ID. |
 | **POST** | `/api/livros` | Cria um novo livro no catálogo. |
+| **PUT** | `/api/livros/:id` | Atualiza um livro existente. |
+| **DELETE** | `/api/livros/:id` | Remove um livro do catálogo. |
 
 ### GET `/api/livros`
 Lista os livros. Aceita os seguintes query params: `genero`, `ordem` (titulo ou nota), `direcao` (asc ou desc), `pagina`, e `limite`.
@@ -80,6 +91,30 @@ Busca os detalhes de um livro específico.
 
 * **Resposta de Erro (400 Bad Request):** Detalha a falha de validação. Ex: {"erro": "A nota deve ser um valor entre 0 e 5."}
 
+### PUT `/api/livros/:id`
+
+Atualiza um livro existente.
+
+* **Validações:**
+  - Todos os campos obrigatórios
+  - Ano e nota devem ser numéricos
+  - Nota entre 0 e 5
+
+* **Resposta de Sucesso (200):**
+Retorna o livro atualizado.
+
+* **Erro (404):**
+Livro não encontrado
+
+### DELETE `/api/livros/:id`
+
+Remove um livro do sistema.
+
+* **Resposta de Sucesso (204 No Content)**
+
+* **Erro (404):**
+Livro não encontrado
+
 
 
 
@@ -93,7 +128,7 @@ No projeto encontrará o arquivo: Api Livros.postman_collection.json .
 
 3. Selecione o arquivo .json.
 
-4. Uma coleção chamada "Api Livros" aparecerá na sua barra lateral com todas as requisições GET e POST prontas para uso.
+4. Uma coleção chamada "Api Livros" aparecerá na sua barra lateral com todas as requisições GET, POST, PUT e DELETE prontas para uso.
 
 # Teste Postman
 * **Teste de criação POST**
@@ -106,3 +141,4 @@ No projeto encontrará o arquivo: Api Livros.postman_collection.json .
 
 * **Teste Filtro**
 ![](Captura%20de%20tela%202026-03-16%20112719.png)
+

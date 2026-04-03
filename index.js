@@ -1,136 +1,175 @@
 const express = require('express');
-const app = express();
+const sqlite3 = require('sqlite3').verbose();
 
+const app = express();
 app.use(express.json());
 
-// array com livros
-let livros = [
-{ id: 1, titulo: "Dom Casmurro", autor:"Machado de Assis", ano:1899, genero:"Literatura", nota:4.8 },
-{ id: 2, titulo: "1984", autor:"George Orwell", ano:1949, genero:"Distopia", nota:3.8 },
-{ id: 3, titulo: "Orgulho e Preconceito", autor:"Jane Austen", ano:1813, genero:"Romance", nota:5 },
-{ id: 4, titulo: "A Hora da Estrela", autor:"Clarice Lispector", ano:1977, genero:"Literatura", nota:4.7 },
-{ id: 5, titulo: "O Grande Gatsby", autor:"F. Scott Fitzgerald", ano:1925, genero:"Drama", nota:4 },
-{ id: 6, titulo: "Cem Anos de Solidão", autor:"Gabriel García Márquez", ano:1967, genero:"Fantasia", nota:3.2 },
-{ id: 7, titulo: "O Sol é Para Todos", autor:"Harper Lee", ano:1960, genero:"Drama", nota:4.9 },
-{ id: 8, titulo: "Torto Arado", autor:"Itamar Vieira Junior", ano:2019, genero:"Literatura", nota:4.8 },
-{ id: 9, titulo: "O Senhor dos Anéis", autor:"J.R.R. Tolkien", ano:1954, genero:"Fantasia", nota:4.9 },
-{ id: 10, titulo: "Uma Família Feliz", autor:"Raphael Montes", ano:2024, genero:"Thriller", nota:4.5 }
-];
+// conectar ao banco 
+const db = new sqlite3.Database(__dirname + '/database.db');
 
-// listar livros
+// criar tabela se não existir
+db.run(`
+CREATE TABLE IF NOT EXISTS livros (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    titulo TEXT NOT NULL,
+    autor TEXT NOT NULL,
+    ano INTEGER NOT NULL,
+    genero TEXT NOT NULL,
+    nota REAL NOT NULL
+)
+`);
+
+// =========================
+// GET - LISTAR LIVROS
+// =========================
 app.get('/api/livros', (req, res) => {
+    const { genero, ordem, direcao, pagina = 1, limite = 5 } = req.query;
 
-const { genero, ordem,direcao, pagina = 1, limite = 5 } = req.query;
+    let query = "SELECT * FROM livros WHERE 1=1";
+    let params = [];
 
-let resultado = [...livros];
+    if (genero) {
+        query += " AND LOWER(genero) = LOWER(?)";
+        params.push(genero);
+    }
 
-// filtro por gênero
+    if (ordem === 'titulo' || ordem === 'nota') {
+        query += ` ORDER BY ${ordem} ${direcao === 'desc' ? 'DESC' : 'ASC'}`;
+    }
 
-if (genero) {
-    resultado = resultado.filter(f => f.genero.toLowerCase() === genero.toLowerCase());
-}
+    const offset = (pagina - 1) * limite;
+    query += " LIMIT ? OFFSET ?";
+    params.push(parseInt(limite), parseInt(offset));
 
-// ordenação
-if (ordem) {
-resultado = resultado.sort((a, b) => {
+    db.all(query, params, (err, rows) => {
+        if (err) return res.status(500).json({ erro: err.message });
 
-if (ordem === 'titulo') {
-return direcao === 'desc'
-? b.titulo.localeCompare(a.titulo)
-: a.titulo.localeCompare(b.titulo);
-}
+        db.get("SELECT COUNT(*) as total FROM livros", [], (err2, count) => {
+            if (err2) return res.status(500).json({ erro: err2.message });
 
-if (ordem === 'nota') {
-return direcao === 'desc'
-? b.nota - a.nota
-: a.nota - b.nota;
-}
-return 0;
-});
-}
-
-// paginação
-const paginaNum = parseInt(pagina);
-const limiteNum = parseInt(limite);
-
-const inicio = (paginaNum - 1) * limiteNum;
-
-const dados = resultado.slice(inicio, inicio + limiteNum);
-
-res.json({
-dados,
-paginacao: {
-pagina_atual: paginaNum,
-itens_por_pagina: limiteNum,
-total: resultado.length
-}
+            res.json({
+                dados: rows,
+                paginacao: {
+                    pagina_atual: parseInt(pagina),
+                    itens_por_pagina: parseInt(limite),
+                    total: count.total
+                }
+            });
+        });
+    });
 });
 
-});
-
-// buscar por id
+// =========================
+// GET - POR ID
+// =========================
 app.get('/api/livros/:id', (req, res) => {
+    const id = req.params.id;
 
-const id = parseInt(req.params.id);
+    db.get("SELECT * FROM livros WHERE id = ?", [id], (err, row) => {
+        if (err) return res.status(500).json({ erro: err.message });
 
-const livro = livros.find(l => l.id === id);
+        if (!row) {
+            return res.status(404).json({ erro: "Livro não encontrado" });
+        }
 
-if (!livro) {
-return res.status(404).json({ erro: "Livro não encontrado" });
-}
-
-res.json(livro);
-
+        res.json(row);
+    });
 });
 
-// Variável para controlar o ID dos novos livros
-let proximoId = 11; 
-
-// POST /api/livros - Criar novo livro
+// =========================
+// POST - CRIAR
+// =========================
 app.post('/api/livros', (req, res) => {
     const { titulo, autor, ano, genero, nota } = req.body;
 
-    
-    
-    // 1. Verifica se todos os campos foram enviados
     if (!titulo || !autor || !ano || !genero || nota === undefined) {
-        return res.status(400).json({ 
-            erro: "Todos os campos (titulo, autor, ano, genero, nota) são obrigatórios." 
-        });
+        return res.status(400).json({ erro: "Todos os campos são obrigatórios" });
     }
 
-    // 2. Verifica os tipos de dados
     if (typeof ano !== 'number' || typeof nota !== 'number') {
-        return res.status(400).json({ 
-            erro: "Os campos 'ano' e 'nota' devem ser números." 
-        });
+        return res.status(400).json({ erro: "Ano e nota devem ser números" });
     }
 
-    // 3. Verifica regras de negócio (nota entre 0 e 5)
     if (nota < 0 || nota > 5) {
-        return res.status(400).json({ 
-            erro: "A nota deve ser um valor entre 0 e 5." 
-        });
+        return res.status(400).json({ erro: "Nota deve ser entre 0 e 5" });
     }
 
-    // --- CRIAÇÃO DO RECURSO ---
-    
-    const novoLivro = {
-        id: proximoId++, // Atribui o ID atual e depois soma 1 para o próximo
-        titulo,
-        autor,
-        ano,
-        genero,
-        nota
-    };
+    const query = `
+        INSERT INTO livros (titulo, autor, ano, genero, nota)
+        VALUES (?, ?, ?, ?, ?)
+    `;
 
-    // Adiciona no array em memória
-    livros.push(novoLivro);
+    db.run(query, [titulo, autor, ano, genero, nota], function(err) {
+        if (err) return res.status(500).json({ erro: err.message });
 
-    // Retorna status 201 (Created) e o objeto recém-criado
-    res.status(201).json(novoLivro);
+        db.get("SELECT * FROM livros WHERE id = ?", [this.lastID], (err2, row) => {
+            if (err2) return res.status(500).json({ erro: err2.message });
+
+            res.status(201).json(row);
+        });
+    });
 });
 
+// =========================
+// PUT - ATUALIZAR
+// =========================
+app.put('/api/livros/:id', (req, res) => {
+    const id = req.params.id;
+    const { titulo, autor, ano, genero, nota } = req.body;
+
+    if (!titulo || !autor || !ano || !genero || nota === undefined) {
+        return res.status(400).json({ erro: "Todos os campos são obrigatórios" });
+    }
+
+    if (typeof ano !== 'number' || typeof nota !== 'number') {
+        return res.status(400).json({ erro: "Ano e nota devem ser números" });
+    }
+
+    if (nota < 0 || nota > 5) {
+        return res.status(400).json({ erro: "Nota deve ser entre 0 e 5" });
+    }
+
+    db.get("SELECT * FROM livros WHERE id = ?", [id], (err, row) => {
+        if (!row) {
+            return res.status(404).json({ erro: "Livro não encontrado" });
+        }
+
+        const query = `
+            UPDATE livros
+            SET titulo = ?, autor = ?, ano = ?, genero = ?, nota = ?
+            WHERE id = ?
+        `;
+
+        db.run(query, [titulo, autor, ano, genero, nota, id], function(err2) {
+            if (err2) return res.status(500).json({ erro: err2.message });
+
+            db.get("SELECT * FROM livros WHERE id = ?", [id], (err3, updated) => {
+                res.json(updated);
+            });
+        });
+    });
+});
+
+// =========================
+// DELETE
+// =========================
+app.delete('/api/livros/:id', (req, res) => {
+    const id = req.params.id;
+
+    db.get("SELECT * FROM livros WHERE id = ?", [id], (err, row) => {
+        if (!row) {
+            return res.status(404).json({ erro: "Livro não encontrado" });
+        }
+
+        db.run("DELETE FROM livros WHERE id = ?", [id], function(err2) {
+            if (err2) return res.status(500).json({ erro: err2.message });
+
+            res.status(204).send();
+        });
+    });
+});
+
+// iniciar servidor
 app.listen(3000, () => {
-console.log("API rodando na porta 3000");
+    console.log("API com banco rodando na porta 3000");
 });
