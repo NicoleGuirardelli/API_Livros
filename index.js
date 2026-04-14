@@ -8,7 +8,8 @@ app.use(express.json());
 const db = new sqlite3.Database(__dirname + '/database.db');
 
 // criar tabela se não existir
-db.run(`
+db.serialize(() => {
+    db.run(`
 CREATE TABLE IF NOT EXISTS livros (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     titulo TEXT NOT NULL,
@@ -18,6 +19,38 @@ CREATE TABLE IF NOT EXISTS livros (
     nota REAL NOT NULL
 )
 `);
+
+    db.get("SELECT COUNT(*) AS total FROM livros", (err, row) => {
+        if (err) {
+            console.error("Erro ao contar livros:", err.message);
+            return;
+        }
+
+        if (row.total === 0) {
+            const livrosIniciais = [
+                ["1984", "George Orwell", 1949, "Distopia", 4.8],
+                ["O Pequeno Príncipe", "Antoine de Saint-Exupéry", 1943, "Infantil", 4.7],
+                ["Dom Casmurro", "Machado de Assis", 1899, "Romance", 4.5],
+                ["A Revolução dos Bichos", "George Orwell", 1945, "Satírico", 4.6],
+                ["Cem Anos de Solidão", "Gabriel García Márquez", 1967, "Realismo mágico", 4.9],
+                ["O Alquimista", "Paulo Coelho", 1988, "Ficção", 4.2],
+                ["Grande Sertão: Veredas", "João Guimarães Rosa", 1956, "Romance", 4.4],
+                ["A Cabana", "William P. Young", 2007, "Drama", 4.1],
+                ["O Hobbit", "J.R.R. Tolkien", 1937, "Fantasia", 4.8],
+                ["Ensaio sobre a cegueira", "José Saramago", 1995, "Distopia", 4.3]
+            ];
+
+            const inserir = db.prepare(`
+                INSERT INTO livros (titulo, autor, ano, genero, nota)
+                VALUES (?, ?, ?, ?, ?)
+            `);
+
+            livrosIniciais.forEach((livro) => inserir.run(livro));
+            inserir.finalize();
+        }
+    });
+});
+
 
 // =========================
 // GET - LISTAR LIVROS
