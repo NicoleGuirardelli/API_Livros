@@ -52,9 +52,8 @@ CREATE TABLE IF NOT EXISTS livros (
 });
 
 
-// =========================
-// GET - LISTAR LIVROS
-// =========================
+
+//get listando livros
 app.get('/api/livros', (req, res) => {
     const { genero, ordem, direcao, pagina = 1, limite = 5 } = req.query;
 
@@ -92,9 +91,7 @@ app.get('/api/livros', (req, res) => {
     });
 });
 
-// =========================
-// GET - POR ID
-// =========================
+//get por id
 app.get('/api/livros/:id', (req, res) => {
     const id = req.params.id;
 
@@ -109,9 +106,9 @@ app.get('/api/livros/:id', (req, res) => {
     });
 });
 
-// =========================
-// POST - CRIAR
-// =========================
+
+//post criando livro
+
 app.post('/api/livros', (req, res) => {
     const { titulo, autor, ano, genero, nota } = req.body;
 
@@ -143,9 +140,8 @@ app.post('/api/livros', (req, res) => {
     });
 });
 
-// =========================
-// PUT - ATUALIZAR
-// =========================
+
+//put atualizando livro 
 app.put('/api/livros/:id', (req, res) => {
     const id = req.params.id;
     const { titulo, autor, ano, genero, nota } = req.body;
@@ -183,10 +179,9 @@ app.put('/api/livros/:id', (req, res) => {
     });
 });
 
-// =========================
+
 // DELETE
-// =========================
-app.delete('/api/livros/:id', (req, res) => {
+e('/api/livros/:id', (req, res) => {
     const id = req.params.id;
 
     db.get("SELECT * FROM livros WHERE id = ?", [id], (err, row) => {
